@@ -1,0 +1,40 @@
+{
+\def\sym#1{\ifmmode^{#1}\else\(^{#1}\)\fi}
+\begin{tabular}{l*{6}{c}}
+\toprule
+            &\multicolumn{1}{c}{(1)}&\multicolumn{1}{c}{(2)}&\multicolumn{1}{c}{(3)}&\multicolumn{1}{c}{(4)}&\multicolumn{1}{c}{(5)}&\multicolumn{1}{c}{(6)}\\
+            &\multicolumn{1}{c}{1}&\multicolumn{1}{c}{2}&\multicolumn{1}{c}{3}&\multicolumn{1}{c}{4}&\multicolumn{1}{c}{5}&\multicolumn{1}{c}{6}\\
+\midrule
+log\_bri\_per\_capita&       0.014\sym{***}&       0.010\sym{***}&       0.005\sym{**} &       0.003         &       0.003         &       0.003         \\
+            &     (0.004)         &     (0.003)         &     (0.002)         &     (0.002)         &     (0.002)         &     (0.002)         \\
+\addlinespace
+log\_saving\_per\_cap&                     &       0.185\sym{***}&       0.068\sym{***}&       0.044\sym{***}&       0.044\sym{***}&       0.043\sym{***}\\
+            &                     &     (0.032)         &     (0.012)         &     (0.010)         &     (0.010)         &     (0.010)         \\
+\addlinespace
+log\_FBCF\_per\_cap&                     &                     &       0.424\sym{***}&       0.271\sym{***}&       0.273\sym{***}&       0.266\sym{***}\\
+            &                     &                     &     (0.039)         &     (0.027)         &     (0.026)         &     (0.026)         \\
+\addlinespace
+log\_FDI\_per\_cap&                     &                     &                     &       0.008         &       0.008         &       0.007         \\
+            &                     &                     &                     &     (0.007)         &     (0.007)         &     (0.007)         \\
+\addlinespace
+log\_trade\_precap&                     &                     &                     &       0.309\sym{***}&       0.309\sym{***}&       0.301\sym{***}\\
+            &                     &                     &                     &     (0.038)         &     (0.038)         &     (0.037)         \\
+\addlinespace
+log\_primaryse&                     &                     &                     &                     &      -0.039         &      -0.049         \\
+            &                     &                     &                     &                     &     (0.059)         &     (0.063)         \\
+\addlinespace
+log\_inflation&                     &                     &                     &                     &                     &      -0.007         \\
+            &                     &                     &                     &                     &                     &     (0.007)         \\
+\addlinespace
+rle         &                     &                     &                     &                     &                     &       0.094\sym{***}\\
+            &                     &                     &                     &                     &                     &     (0.032)         \\
+\addlinespace
+\_cons      &       8.000\sym{***}&       6.886\sym{***}&       4.858\sym{***}&       3.604\sym{***}&       3.775\sym{***}&       3.998\sym{***}\\
+            &     (0.043)         &     (0.201)         &     (0.277)         &     (0.317)         &     (0.467)         &     (0.484)         \\
+\midrule
+\(N\)       &        2544         &        2544         &        2544         &        2544         &        2544         &        2544         \\
+\bottomrule
+\multicolumn{7}{l}{\footnotesize Standard errors in parentheses}\\
+\multicolumn{7}{l}{\footnotesize \sym{*} \(p<0.10\), \sym{**} \(p<0.05\), \sym{***} \(p<0.01\)}\\
+\end{tabular}
+}
