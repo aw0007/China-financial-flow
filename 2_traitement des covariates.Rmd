@@ -1,0 +1,419 @@
+---
+title: "traitemant des covariates"
+output: html_document
+date: "2024-01-02"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+```{r}
+library(tidyverse)
+library(readxl)
+library(ggplot2)
+library(dplyr)
+library(RColorBrewer)
+library(factoextra)
+library(FactoMineR)
+library(ggforce)
+library(tinytex)
+library(vcd)
+library(haven)
+library(labelled)
+library(openxlsx)
+library(writexl)
+```
+
+```{r}
+setwd("C:/Users/massa/Desktop/Repli/data/")
+
+filpath1<-("World developement indicator WB/Trade/API_NE.TRD.GNFS.ZS_DS2_en_excel_v2_6299056 - Copy.xls")
+trade <- read_excel(filpath1)
+
+filpath2<-("World developement indicator WB/Net investment in nonfinancial assets (% of GDP)/API_GC.NFN.TOTL.GD.ZS_DS2_en_excel_v2_6299719 - Copy.xls")
+investment <- read_excel(filpath2)
+
+filpath3<-("World developement indicator WB/School enrollment, primary (% gross)/API_SE.PRM.ENRR_DS2_en_excel_v2_6299269 - Copy.xls")
+primary_se <- read_excel(filpath3)
+
+filpath4<-("World developement indicator WB/School enrollment, secondary (% gross)/API_SE.SEC.ENRR_DS2_en_excel_v2_6298803 - Copy.xls")
+secondary_se <- read_excel(filpath4)
+
+filpath5<-("World developement indicator WB/gdp per cap current/API_NY.GDP.PCAP.CD_DS2_en_excel_v2_6224737.xls")
+gdp_per_cap<-read_excel(filpath5)
+
+
+filpath6<-("C:/Users/massa/Desktop/Repli/data//World developement indicator WB/Gross domestic savings (% of GDP)/API_NY.GDS.TOTL.ZS_DS2_en_excel_v2_5997014 copy.xls")
+savings<- read_excel(filpath6)
+
+
+filpath7<-("Chinas_Global_Public_Diplomacy_Dashboard_Dataset_Version_Data_Packet_2/ChinesePublicDiplomacy.xlsx")
+chinapolidemo<- read_excel(filpath7)
+
+filpath8<-("AidDatas_Global_Chinese_Development_Finance_Dataset_Version_3_0/AidDatas_Global_Chinese_Development_Finance_Dataset_Version_3_0/AidDatasGlobalChineseDevelopmentFinanceDataset_v3.0 - Copy.xlsx")
+AidDatasGlobalChineseDevelopmentFinance <- read_excel(filpath8)
+
+filpath9<-("AidDatas_Global_Chinese_Development_Finance_Dataset_Version_3_0/AidDatas_Global_Chinese_Development_Finance_Dataset_Version_3_0/GCDF_3.0_ADM2_Locations.xlsx")
+GCDF_3_0_ADM2_Locations <- read_excel(filpath9)
+
+
+filpath10<-("AidDatas_Global_Chinese_Development_Finance_Dataset_Version_3_0/AidDatas_Global_Chinese_Development_Finance_Dataset_Version_3_0/GCDF_3.0_ADM1_Locations.xlsx")
+GCDF_3_0_ADM1_Locations <- read_excel(filpath10)
+
+filpath11<-("CEPII GEO DIST/dist_cepii.dta")
+geodist<- read_dta(filpath11)
+
+filpath12<-("World developement indicator WB/Gross fixed capital formation (_ of GDP)/API_NE.GDI.FTOT.ZS_DS2_en_excel_v2_5997607 copy.xls")
+GFCF_all<-read_excel(filpath12)
+
+
+filpath13<-("World developement indicator WB/Foreign direct investment, net inflows (_ of GDP)/API_BX.KLT.DINV.WD.GD.ZS_DS2_en_excel_v2_5997327raw copy.xls")
+FDI<-read_excel(filpath13)
+
+filpath14<-("World developement indicator WB/GDP (current US$)/API_NY.GDP.MKTP.CD_DS2_en_excel_v2_6224535.xls")
+GDP_current<-read_excel(filpath14)
+
+
+
+filpath15<-("Economic Transformation Database/total productivity factor/pld2023_dataset.dta")
+PLD<-read_dta(filpath15)
+
+
+filpath16 <-("World developement indicator WB/pOPULATION/API_SP.POP.TOTL_DS2_en_excel_v2_6299418 - Copy.xls")
+pop<-read_excel(filpath16)
+
+
+filpath17 <-("World developement indicator WB/inflation consumer price/API_FP.CPI.TOTL.ZG_DS2_en_excel_v2_6297763 - Copy.xls")
+inflation <-read_excel(filpath17)
+
+
+filpath18 <-("World developement indicator WB/Finance/API_7_DS2_en_excel_v2_6301790 - Copy.xls")
+finance<-read_excel(filpath18)
+
+
+filpath19 <-("World developement indicator WB/Labor force/API_SL.TLF.TOTL.IN_DS2_en_excel_v2_6508341 - Copy.xls")
+Labor<-read_excel(filpath19)
+
+filpath20 <-("C:/Users/massa/Desktop/Repli/data//steel production/steel.xlsx")
+steel<-read_excel(filpath20)
+
+filpath21 <-("C:/Users/massa/Desktop/Repli/data/Economic Transformation Database/ETD_230918.dta")
+ETD<-read_dta(filpath21)
+
+
+```
+
+## COVARIATES
+Traitement sur les base des Covariates 
+
+
+###
+Labor force
+
+```{r}
+Labor <- Labor %>%
+  pivot_longer(-c(1,2),
+               names_to = "year",
+               values_to = "Labor_force",
+               values_drop_na = TRUE,
+               # Transform the decade column data type to integer
+               names_transform = list(year = as.integer)) 
+
+
+```
+
+
+### finance
+```{r}
+#colnames(finance)
+finance <- finance %>%        
+  filter(Indicator == "FS.AST.DOMS.GD.ZS") %>%
+  select(-3) %>%
+  pivot_longer(-c(1,2),
+               names_to = "year",
+               values_to = "financing",
+               values_drop_na = TRUE,
+               names_transform = list(year = as.integer))
+
+```
+
+
+### INFLATION
+```{r}
+
+inflation <- inflation %>%
+  pivot_longer(-c(1,2),
+               names_to = "year",
+               values_to = "inflation",
+               values_drop_na = TRUE,
+               # Transform the decade column data type to integer
+               names_transform = list(year = as.integer)) 
+
+```
+
+
+### Population
+```{r}
+inflation
+
+pop<- pop %>%
+  pivot_longer(-c(1,2),
+               names_to = "year",
+               values_to = "Population",
+               values_drop_na = TRUE,
+               # Transform the decade column data type to integer
+               names_transform = list(year = as.integer)) 
+
+
+```
+
+
+
+## Productivity
+```{r}
+
+PLD <- PLD %>% rename(country_iso3 = countrycode)  
+
+PLD_VA <-  PLD %>%
+  select(1,2,3,4)
+# Créer une base de données pour la variable VA
+PLD_VA <- PLD_VA %>% 
+  pivot_wider(names_from = sector, values_from = VA, names_prefix = "VA_") %>% 
+  as.data.frame()
+
+
+
+# Créer une base de données pour la variable EMP
+PLD_EMP <- PLD %>% 
+  select(1,2,3,5) %>% 
+  pivot_wider(names_from = sector, values_from = EMP, names_prefix = "EMP_") %>% 
+  as.data.frame()
+
+# Créer une base de données pour la variable xr
+PLD_xr <- PLD %>%
+  select(1,2,3,9) %>%
+  pivot_wider(names_from = sector, values_from = xr, names_prefix = "xr_") %>% 
+  as.data.frame()
+
+
+
+```
+
+#Economique transformation
+```{r}
+
+ETD <- ETD %>% rename(country_iso3 = cnt,
+                      country_en=country) 
+
+ETD_va <- ETD %>%
+  filter(var=="VA")
+ETD_emp <- ETD %>% 
+  filter(var=="EMP")
+
+
+
+ETD_va<- ETD_va %>%
+  select(-3) %>%
+  rename_with(~paste0("VA_", .), .cols = -c(country_en, country_iso3, year))
+
+
+ETD_emp<- ETD_emp %>%
+  select(-3) %>%
+  rename_with(~paste0("VA_", .), .cols = -c(country_en, country_iso3, year))
+
+
+
+```
+
+
+
+### Investissement direct etranger
+```{r}
+
+FDI<- FDI %>%
+  pivot_longer(-c(1,2),
+               names_to = "year",
+               values_to = "FDI_flows",
+               values_drop_na = TRUE,
+               # Transform the decade column data type to integer
+               names_transform = list(year = as.integer)) 
+
+
+```
+### TRADE
+
+```{r}
+
+trade<- trade %>%
+  pivot_longer(-c(1,2),
+               names_to = "year",
+               values_to = "trade_MX",
+               values_drop_na = TRUE,
+               # Transform the decade column data type to integer
+               names_transform = list(year = as.integer)) 
+
+```
+
+### investment 
+
+```{r}
+
+
+investment<- investment %>%
+  pivot_longer(-c(1,2),
+               names_to = "year",
+               values_to = "investment",
+               values_drop_na = TRUE,
+               # Transform the decade column data type to integer
+               names_transform = list(year = as.integer)) 
+
+```
+
+### School enrollment 
+
+
+```{r}
+#primary
+
+primary_se<- primary_se %>%
+  pivot_longer(-c(1,2),
+               names_to = "year",
+               values_to = "primaryse",
+               values_drop_na = TRUE,
+               # Transform the decade column data type to integer
+               names_transform = list(year = as.integer)) 
+
+#secondary
+
+
+secondary_se<- secondary_se %>%
+  pivot_longer(-c(1,2),
+               names_to = "year",
+               values_to = "secondaryse",
+               values_drop_na = TRUE,
+               # Transform the decade column data type to integer
+               names_transform = list(year = as.integer)) 
+
+
+
+```
+
+### PIB par habitant
+```{r}
+GDP <- gdp_per_cap %>%
+  pivot_longer(-c(1,2),
+               names_to = "year",
+               values_to = "GDPpercap",
+               values_drop_na = TRUE,
+               # Transform the decade column data type to integer
+               names_transform = list(year = as.integer)) 
+
+
+
+
+GDP_current<- GDP_current %>%
+  pivot_longer(-c(1,2),
+               names_to = "year",
+               values_to = "GDP_curentus",
+               values_drop_na = TRUE,
+               # Transform the decade column data type to integer
+               names_transform = list(year = as.integer)) 
+
+```
+
+
+### savings
+
+```{r}
+
+savings1 <- savings %>%
+  pivot_longer(-c(1,2),
+               names_to = "year",
+               values_to = "savings_percent_gdp",values_drop_na = TRUE,
+               names_transform = list(year = as.integer)
+               )
+
+
+savings1 <- savings1 %>%
+  filter(year>1999)
+```
+
+### GEOdist
+Geo dist between  recipient country and china
+```{r}
+
+geodist_chine <- geodist %>% 
+  filter(iso_o=="CHN")  %>% 
+  rename(country_iso3="iso_d")
+
+```
+```{r}
+
+chinapolidemo$year<-as.integer(chinapolidemo$year)
+
+```
+### Formation brute du capital fixe (prive + public)
+```{r}
+
+GFCF_all <- GFCF_all %>%
+  pivot_longer(-c(1,2),
+               names_to = "year",
+               values_to = "Gross_Fixed_CF",
+               values_drop_na = TRUE,
+               # Transform the decade column data type to integer
+               names_transform = list(year = as.integer)) 
+
+
+#attributes(GFCF$Gross_Fixed_private_CF)$label <- "Gross fixed capital
+#formation (% of GDP)"
+```
+## Savings our datasets
+
+```{r}
+setwd("C:/Users/massa/Desktop/Memoire MAG3/data/")
+
+write_dta(savings1, "savings1.dta")
+
+write_dta(GFCF_all, "GFCF_all.dta")
+
+write_dta(secondary_se, "secondary_se.dta")
+
+write_dta(primary_se, "primary_se.dta")
+
+write_dta(trade, "trade.dta")
+
+write_dta(investment, "investement.dta")
+
+write_dta(GDP, "GDP_per_cap.dta")
+
+write_dta(FDI, "FDI.dta")
+
+write_dta(geodist_chine, "GEODIST.dta")
+
+write_dta(chinapolidemo, "chinapolidemo.dta")
+
+write_dta(GDP_current, "GDP_current.dta")
+
+write_dta(PLD_xr, "PLD_xr.dta")
+
+write_dta(PLD_EMP, "PLD_EMP.dta")
+
+write_dta(PLD_VA, "PLD_VA.dta")
+
+write_dta(pop, "population.dta")
+
+write_dta(inflation, "inflation.dta")
+
+
+write_dta(finance, "finance.dta")
+
+
+write_dta(Labor, "Labor.dta")
+
+write_dta(steel, "steel.dta")
+
+write_dta(ETD_emp,"ETD_emp.dta")
+
+write_dta(ETD_va,"ETD_va.dta")
+
+```

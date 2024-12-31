@@ -1,0 +1,179 @@
+---
+title: "Imputation Multiple avec MICE et Random Forest"
+output: html_document
+date: "2024-03-17"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+## Introduction
+
+L'imputation multiple est une technique statistique permettant de gérer les données manquantes dans les ensembles de données. Plutôt que de supprimer les lignes ou colonnes contenant des valeurs manquantes, ce qui peut introduire des biais, l'imputation multiple remplace les valeurs manquantes par des estimations basées sur les informations disponibles dans le reste de l'ensemble de données. 
+
+## Package `mice`
+
+Le package `mice` en R implémente la méthode d'Imputation Multiple par Chaînes d'Équations (Multivariate Imputation by Chained Equations). Elle permet de créer plusieurs imputations pour les données manquantes, reflétant ainsi l'incertitude inhérente à tout processus d'imputation.
+
+## Utilisation de Random Forest pour l'Imputation
+
+`mice` offre plusieurs méthodes d'imputation, y compris l'utilisation de Random Forest (`method = "rf"`), un algorithme d'apprentissage automatique puissant qui fonctionne bien sur des données complexes et non linéaires.
+
+### Exemple d'Imputation
+
+Considérons un ensemble de données `data` avec des valeurs manquantes. Nous souhaitons imputer ces données en utilisant la méthode Random Forest avec 5 ensembles d'imputations. Voici comment procéder :
+
+### Explication des Paramètres
+
+- `m=5` : Cela crée 5 ensembles d'imputations, permettant de capturer l'incertitude autour des valeurs imputées.
+- `method = "rf"` : Utilise Random Forest pour l'imputation, une méthode robuste pour estimer les valeurs manquantes à partir des données disponibles.
+
+## Conclusion
+
+L'utilisation de l'imputation multiple avec Random Forest dans `mice` est une approche puissante pour traiter les données manquantes. Elle combine la robustesse de Random Forest avec les avantages de l'imputation multiple, offrant ainsi des estimations plus fiables et précises pour les valeurs manquantes.
+
+```{r}
+library(mice)
+library(tidyverse)
+library(haven)
+library(knitr)
+```
+
+
+```{r}
+# MEAN / MEDIAN / MICE imputation
+# Paper detailing the functions of MICE if interested...
+# https://cran.r-project.org/web/packages/mice/mice.pdf
+
+
+setwd("C:/Users/massa/Desktop/Repli/data")
+
+data <- read_dta('BASE2.dta')
+
+# Easiest way for data imputation (with not always the prettiest results...)
+# data$COLUMN_NAME[is.na(data$COLUMN_NAME)] <- median(data$COLUMN_NAME, na.rm=TRUE)
+# data$COLUMN_NAME[is.na(data$COLUMN_NAME)] <- mean(data$COLUMN_NAME, na.rm=TRUE)
+# It's really quite that simple.
+```
+
+
+```{r}
+data1 <- data %>%
+  select(country_iso3,year,log_GDPpercap, log_bri_per_capita, log_saving_per_cap, log_FBCF_per_cap, log_FDI_per_cap, log_trade_precap, log_primaryse, log_population, log_inflation, rle, log_steel_per_capita)
+
+# Calcul du nombre de données manquantes par colonne
+missing_counts <- data1 %>% 
+  summarise(across(everything(), ~sum(is.na(.))))
+
+# Affichage des résultats
+print(missing_counts)
+
+# Si vous souhaitez calculer le taux de données manquantes plutôt que le nombre, vous pouvez faire :
+missing_rates <- data1 %>% 
+  summarise(across(everything(), ~mean(is.na(.)) * 100))
+
+# Affichage des taux de données manquantes en pourcentage
+print(missing_rates)
+
+missing_ratesdf<-data_frame(missing_rates)
+
+
+# Convertir le dataframe missing_rates en format LaTeX avec kable
+missing_rates_tex <- kable(missing_ratesdf, format = "latex", booktabs = TRUE)
+
+# Enregistrer le résultat au format .tex
+writeLines(missing_rates_tex, "C:/Users/massa/Desktop/Repli/resultats/missing_rates1.tex")
+
+
+```
+
+```{r}
+# Calculer le nombre total de valeurs manquantes dans la base de données
+total_missing <- sum(is.na(data1))
+
+# Calculer le nombre total de cellules dans la base de données
+total_cells <- nrow(data1) * ncol(data1)
+
+# Calculer le taux de données manquantes global
+missing_rate_global <- (total_missing / total_cells) * 100
+
+# Afficher le taux de données manquantes global
+print(missing_rate_global)
+```
+```{r}
+
+# Supposons que `data` est votre dataframe
+# Créer un dataframe indiquant les positions des données manquantes
+data_missing <- is.na(data1) %>% 
+  as.data.frame() %>%
+  mutate(Row = row_number()) %>%
+  pivot_longer(cols = -Row, names_to = "Variable", values_to = "Missing")
+
+# Créer la heatmap de données manquantes avec une légende de taille réduite
+p <- ggplot(data_missing, aes(x = Row, y = Variable, fill = Missing)) +
+  geom_tile() +
+  scale_fill_manual(values = c("TRUE" = "#FF6666", "FALSE" = "#ACE2E1"), name = "") +
+  labs(title = "Heatmap of Missing Data", x = "Row Number", y = "Variable") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1),
+        legend.text = element_text(size = 2),
+          legend.key.size = unit(0.2, "cm")) # Réduire la taille de la légende
+
+# Afficher le graphe
+print(p)
+
+ggsave("C:/Users/massa/Desktop/Repli/resultats/missing_data_heatmap1.png", plot = p, width = 10, height = 8)
+
+
+
+```
+
+```{r}
+
+#md.pattern(data1)
+# Let's interpret this...
+# 30,000 observations are complete -- 8% of our total data is missing.
+# 7 missing values in occupation
+# 1809 observations are missing in workclass and occupation
+# So on and so forth...
+
+# A more helpful representation can be found using
+# Code from this website:
+
+# https://datascienceplus.com/imputing-missing-data-with-r-mice-package/
+library(VIM)
+aggr_plot <- aggr(data1, col=c('navyblue','red'),
+                  numbers=TRUE,
+                  sortVars=TRUE,
+                  labels=names(data1),
+                  cex.axis=.1,
+                  gap=2,
+                  ylab=c("Histogram of Missing data","Pattern"))
+
+
+```
+
+
+```{r}
+methods(mice)
+
+imputed_data <- mice(data1, m=5, method = "rf")
+
+
+summary(imputed_data)
+```
+
+
+```{r}
+complete_data <- complete(imputed_data, 1)
+
+# Enregistrer cette imputation complète en format .dta
+write_dta(complete_data, "C:/Users/massa/Desktop/Repli/data/imputed_data_base2bis.dta")
+
+```
+
+
+
+

@@ -1,0 +1,362 @@
+---
+title: "traitement de la base BRI finance"
+output: html_document
+date: "2023-12-25"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+# PREAMBULE
+Ce document explique l'ensemble des codes R utiliser  utilisés pour le
+traitement prlimiaire des bases brutes  collectees.
+
+# PACKAGES 
+Chargement des packages necessaires.
+
+```{r}
+library(tidyverse)
+library(readxl)
+library(ggplot2)
+library(dplyr)
+library(RColorBrewer)
+library(factoextra)
+library(FactoMineR)
+library(ggforce)
+library(tinytex)
+library(vcd)
+library(haven)
+library(labelled)
+library(openxlsx)
+library(writexl)
+library(ggmap)
+library(sf)
+library(leaflet)
+```
+
+
+```{r}
+
+setwd("C:/Users/massa/Desktop/Repli/data/AidDatas_Global_Chinese_Development_Finance_Dataset_Version_3_0/AidDatas_Global_Chinese_Development_Finance_Dataset_Version_3_0")
+dta <- read_dta("AidDatasGlobalChineseDevelopmentFinance3GEO.dta")
+```
+
+```{r}
+#colnames(dta)
+dta01 <- dta %>%
+  select(1,6,7,8,9,10,11,12,13,14,16,21,22,23,52,53
+         ,129,130,131,132,133,134,135,136,137)
+```
+
+
+
+
+
+```{r}
+# Statistiques descriptives pour les variables numériques
+summary(dta01$CommitmentYear)
+summary(dta01$ImplementationStartYear)
+summary(dta01$CompletionYear)
+summary(dta01$AmountConstantUSD2021)
+summary(dta01$AmountNominalUSD)
+
+```
+
+```{r}
+setwd("C:/Users/massa/Desktop/Repli/data/AidDatas_Global_Chinese_Development_Finance_Dataset_Version_3_0/AidDatas_Global_Chinese_Development_Finance_Dataset_Version_3_0")
+# Calcul du nombre de projets par année d'engagement
+dta01<- dta01 %>% 
+  mutate(mmontant=AmountConstantUSD2021/1000000000)
+
+
+dta_by_year <- dta01 %>%
+  group_by(CommitmentYear) %>%
+  summarise(NombreProjets = n())
+
+dta_sum_by_dta_by_country_year_year <- dta01 %>%
+  group_by(Recipient,CommitmentYear) %>%
+  summarise(totalAmountyc = sum(mmontant, na.rm = TRUE),)
+
+
+#dta_sum_by_dta_by_country_year_year <- dta01 %>%
+# group_by(Recipient,CommitmentYear) %>%
+#  summarise(totalAmountyc = sum(mmontant, na.rm = TRUE),)
+
+
+dta02 <- dta01 %>%
+  filter(!Recipient %in% c("Africa, regional", "Oceania, regional", "Asia, regional", "Middle East, regional", "America, regional", "Multi-Region", "Europe, regional"))
+
+
+dta_sum_by_dta_by_country_year_year2 <- dta01 %>%
+  group_by(Recipient,RecipientISO3,CommitmentYear) %>%
+  summarise(totalAmountyc = sum(AmountConstantUSD2021, na.rm = TRUE),)
+
+
+dta_sum_by_dta_by_country_year_year3 <- dta02 %>%
+  group_by(Recipient,RecipientISO3,CommitmentYear) %>%
+  summarise(totalAmountyc = sum(AmountConstantUSD2021, na.rm = TRUE),)
+
+
+write_dta(dta_sum_by_dta_by_country_year_year2,"dta_sum_by_dta_by_country_year_year2.dta")
+
+write_dta(dta_sum_by_dta_by_country_year_year3,"dta_sum_by_dta_by_country_year_year3.dta")
+
+
+
+```
+
+#creation de la base par secteurs
+
+```{r}
+setwd("C:/Users/massa/Desktop/Repli/data/AidDatas_Global_Chinese_Development_Finance_Dataset_Version_3_0/AidDatas_Global_Chinese_Development_Finance_Dataset_Version_3_0")
+# Calcul du nombre de projets par année d'engagement
+dta01<- dta01 %>% 
+  mutate(mmontant=AmountConstantUSD2021/1000000000)
+
+
+dta02 <- dta01 %>%
+  filter(!Recipient %in% c("Africa, regional", "Oceania, regional", "Asia, regional", "Middle East, regional", "America, regional", "Multi-Region", "Europe, regional"))
+
+# Agrégation par Recipient (pays), CommitmentYear (année) et SectorName (secteur)
+dta_aggregated_country_year_sector <- dta02 %>%
+  group_by(Recipient,RecipientISO3,CommitmentYear, SectorName) %>%
+  summarise(TotalAmount = sum(AmountConstantUSD2021, na.rm = TRUE), .groups = "drop")
+
+
+# Remodelage des données pour avoir une colonne par secteur
+dta_aggregated_country_year_sector_wide <- dta_aggregated_country_year_sector %>%
+  pivot_wider(names_from = SectorName, values_from = TotalAmount, values_fill = list(TotalAmount = 0))
+
+
+# Nettoyage et raccourcissement des noms de variables
+dta_aggregated_country_year_sector_wide <- dta_aggregated_country_year_sector_wide %>%
+  rename_with(~str_replace_all(.x, " ", "_")) %>% # Remplacer les espaces par des underscores
+  rename_with(~str_replace_all(.x, "[^[:alnum:]_]", "")) %>% # Supprimer les caractères non alphanumériques sauf underscores
+  rename_with(~str_sub(.x, 1, 32)) # Limiter la longueur à 32 caractères
+
+# Vérification des noms de variables
+names(dta_aggregated_country_year_sector_wide)
+
+# Enregistrement du fichier nettoyé
+write_dta(dta_aggregated_country_year_sector_wide, "dta_aggregated_country_year_sector_wide.dta")
+
+
+```
+
+
+```{r}
+
+# Définir le chemin de base pour les graphiques
+chemin_base <- "C:/Users/massa/Desktop/Repli/resultats/"
+
+# Fonction pour enregistrer un graphique avec le titre comme nom de fichier
+enregistrer_graphique <- function(ggplot_object) {
+  if (is.null(ggplot_object$labels$title)) {
+    stop("Le graphique doit avoir un titre.")
+  }
+
+  # Extraire et nettoyer le titre pour l'utiliser comme nom de fichier
+  titre_graphique <- ggplot_object$labels$title
+  nom_fichier <- gsub("[[:punct:]]|\\s", "_", titre_graphique)
+
+  # Chemin complet du fichier
+  chemin_fichier <- paste0(chemin_base, nom_fichier, ".png")
+
+  # Enregistrer le graphique
+  ggsave(chemin_fichier, plot = ggplot_object, width = 10, height = 8)
+  message("Graphique enregistré : ", chemin_fichier)
+}
+
+
+```
+
+```{r}
+# Graphique pour les pays bénéficiaires
+a<-ggplot(data = dta01) +
+  geom_bar(aes(x =fct_infreq(RecipientISO3)), fill = "blue", color = "black") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 90, hjust = 1,size = 4)) +
+  labs(title = "Distribution des Projets par Pays Bénéficiaire", x = "Pays Bénéficiaire", y = "Nombre de Projets")
+
+enregistrer_graphique(a)
+
+
+# Convertir la variable Niv_educ en un facteur avec les labels personnalisés
+
+#mdl_niv_etu_ac<- c("Neant","Niveau Primaire","Niveau Collegiale","Niveau secondaire","Niveau supperieur")
+#col_niv_etu_ac <- c("#2f4b7c", "#ff7f0e", "#2ca02c", "#d62728", "#9467bd")
+```
+
+
+
+```{r}
+
+# Afficher les premières lignes du dataframe modifié
+
+# Graphique pour les secteurs
+b<-ggplot(data = dta01) +
+  geom_bar(aes(x =fct_infreq(SectorName)), fill = "green", color = "black") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1 , size = 5)) +
+  labs(title = "Distribution des Projets par Secteur", x = "Secteur", y = "Nombre de Projets")
+
+enregistrer_graphique(b)
+
+```
+
+
+```{r}
+
+# Calcul du nombre de projets par année d'engagement
+dta_by_year <- dta01 %>%
+  group_by(CommitmentYear) %>%
+  summarise(NombreProjets = n())
+
+# Création du graphique en ligne
+c<-ggplot(data = dta_by_year) +
+  geom_line(aes(x = CommitmentYear, y = NombreProjets, group = 1), color = "purple") +
+  theme_minimal() +
+  labs(title = "Distribution des Projets par Année d'Engagement", 
+       x = "Année d'Engagement", 
+       y = "Nombre de Projets")
+
+enregistrer_graphique(c)
+
+# Graphique pour l'année d'engagement
+d<-ggplot(data = dta01) +
+  geom_bar(aes(x = as.factor(CommitmentYear)), fill = "purple", color = "black") +
+  theme_minimal() +
+  labs(title = "Distribution des Projets par Année d'Engagement", x = "Année d'Engagement", y = "Nombre de Projets")
+enregistrer_graphique(d)
+
+```
+
+
+```{r}
+
+# Somme totale des montants par année d'engagement
+dta_sum_by_year <- dta01 %>%
+  group_by(CommitmentYear) %>%
+  summarise(TotalAmount = sum(mmontant, na.rm = TRUE))
+
+# Graphique en ligne pour la somme totale avec un type de ligne différent et un thème différent
+f<-ggplot(data = dta_sum_by_year, aes(x = CommitmentYear, y = TotalAmount)) +
+  geom_line(color = "blue", linetype = "dashed") +  # Ligne en pointillé
+  theme_light() +  # Utilisation d'un thème clair
+  theme(
+    plot.title = element_text(hjust = 0.5, face = "bold", size = 14),
+    axis.title = element_text(face = "bold", size = 12),
+    axis.text = element_text(size = 10)
+  ) +
+  labs(
+    title = "Évolution de la Somme Totale des Montants par Année d'Engagement",
+    x = "Année d'Engagement",
+    y = "Montant  Totale investit en milliard de USD"
+  )
+enregistrer_graphique(f)
+
+write_dta(dta_sum_by_year,"dta_sum_by_year.dta")
+
+
+```
+
+```{r}
+
+# Calcul de la somme totale des montants par pays bénéficiaire
+dta_sum_by_dta_by_country <- dta01 %>%
+  group_by(RecipientISO3) %>%
+  summarise(totalAmountc = sum(mmontant, na.rm = TRUE))
+
+# Graphique pour les pays bénéficiaires
+g<-ggplot(data = dta_sum_by_dta_by_country) +
+  geom_col(aes(x = fct_reorder(RecipientISO3, -totalAmountc), y = totalAmountc), fill ="#17becf", color = "black") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 90, hjust = 1, size = 4)) +
+  labs(title = "Distribution des Montants par Pays Bénéficiaire", 
+       x = "Pays Bénéficiaire", 
+       y = "Montant  Totale investit en milliard de USD")
+
+enregistrer_graphique(g)
+
+```
+
+
+
+```{r}
+
+# Ensemble de 24 couleurs distinctes
+colors_set <- c("#e6194B", "#3cb44b", "#ffe119", "#4363d8", "#f58231", "#911eb4", 
+                "#46f0f0", "#f032e6", "#bcf60c", "#fabebe", "#008080", "#e6beff", 
+                "#9a6324", "#fffac8", "#800000", "#aaffc3", "#808000", "#ffd8b1", 
+                "#000075", "#808080", "#ffffff", "#000000", "#a9a9a9", "#000033")
+
+# Agrégation des données par secteur et par année
+dta_sum_by_dta_by_sector <- dta01 %>%
+  group_by(SectorName, CommitmentYear) %>%
+  summarise(totalAmountsector = sum(mmontant, na.rm = TRUE))
+
+# Création du graphique en ligne avec des couleurs personnalisées
+h<-ggplot(data = dta_sum_by_dta_by_sector) +
+  geom_line(aes(x = CommitmentYear, y = totalAmountsector, color = SectorName), size = 0.5) +
+  scale_color_manual(values = colors_set) +
+  theme_minimal() +
+  theme(
+    legend.position = c(0.1, 0.9), # Position dans le coin supérieur gauche
+    legend.background = element_rect(fill = "transparent", colour = NA),
+    legend.text = element_text(size = 1),
+    legend.key.size = unit(0.5, "lines"),
+    plot.margin = unit(c(1, 1, 1, 1), "lines")
+  ) +
+  labs(
+    title = "Évolution des Montants par Secteur et par Année", 
+    x = "Année d'Engagement", 
+    y = "Montant  Totale investit en milliard de USD",
+    color = "Secteur"
+  )
+
+enregistrer_graphique(h)
+```
+```{r}
+
+# Agrégation des données par secteur et par année
+dta_sum_by_dta_by_sector <- dta01 %>%
+  group_by(SectorName, CommitmentYear) %>%
+  summarise(totalAmountsector = sum(mmontant, na.rm = TRUE))
+
+# Création de graphiques en ligne pour chaque secteur
+i<-ggplot(data = dta_sum_by_dta_by_sector) +
+  geom_line(aes(x = CommitmentYear, y = totalAmountsector, group = SectorName), size = 0.5) +
+  facet_wrap(~ SectorName, scales = "free_y") + # Créer une facette pour chaque secteur
+  theme_minimal() +
+  theme(
+    strip.text.x = element_text(size = 6), # Taille du texte des titres de facettes
+    legend.position = "none", # Désactiver la légende
+    axis.text.x = element_text(angle = 45, hjust = 1),
+    axis.text.y = element_text(size = 6),
+    plot.background = element_rect(fill = "white", colour = NA)
+  ) +
+  labs(
+    title = "Évolution des Montants par Secteur et par Année", 
+    x = "Année d'Engagement", 
+    y = "Montant  Totale investit en milliard de USD"
+  )
+
+enregistrer_graphique(i)
+
+```
+```{r}
+# Somme des montants par secteur
+sector_funding <- aggregate(mmontant ~ SectorName, data = dta01, sum)
+
+# Graphique des secteurs les plus financés
+j<-ggplot(sector_funding, aes(x = reorder(SectorName, -mmontant), y = mmontant)) +
+  geom_bar(stat = "identity", fill = "orange") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1,size=4)) +
+  labs(title = "Secteurs les Plus Financés", x = "Secteur", y = "Montant  Totale investit en milliard de USD")
+
+enregistrer_graphique(j)
+
+```
+
+
