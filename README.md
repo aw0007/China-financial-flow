@@ -66,7 +66,9 @@ Below is a description of the scripts and their functions in the project:
   Studies the impact of Chinese financial flows on gross fixed capital formation (GFCF). *(Stata)*  
 
 - **AX4_igraph:**  
-  Creates network graphs to visualize connections and flows between countries and China. *(Python)*  
+  Creates network graphs to visualize connections and flows between countries and China. *(Python)*
+
+- in  the file ohter kind of mipping yous ki d fin advanced mapping of project around the word 
 
 - **AX5_Cartographie:**  
   Country-level mapping to show the geographic dispersion of Chinese investments. *(Python)*  
