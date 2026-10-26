@@ -1,0 +1,15 @@
+data/raw/
+*.aux
+*.log
+*.out
+*.toc
+*.lof
+*.lot
+*.blg
+*.bbl
+*.fls
+*.fdb_latexmk
+*.synctex.gz
+.Rhistory
+.RData
+__pycache__/
