@@ -11,12 +11,13 @@ We estimate the effect of Chinese financial flows on GDP per capita in 147 recip
 | `code/` | the analysis scripts, numbered in run order |
 | `code/maps/` | project maps by sector and continent |
 | `output/` | regression tables (`.tex`) and figures (`.png`) produced by the scripts |
-| `data/derived/` | `dta_sum_by_year.dta`, Chinese commitments summed by year, read by `ax3_steel_flows_correlation.do` |
+| `data/raw/` | the downloaded sources, not in the repository |
+| `data/derived/` | files the scripts write and read; only `dta_sum_by_year.dta` is in the repository |
 | `paper/` | the paper in English (`main.tex`, `main.pdf`) |
 
 ## Data
 
-The raw data are not in the repository. We use:
+The raw data are not in the repository. Each source goes in `data/raw/`, under the folder name the scripts use (for AidData, `data/raw/AidDatas_Global_Chinese_Development_Finance_Dataset_Version_3_0/AidDatas_Global_Chinese_Development_Finance_Dataset_Version_3_0/`). We use:
 
 | Source | Variables |
 |---|---|
@@ -31,7 +32,7 @@ The raw data are not in the repository. We use:
 
 ## Running the analysis
 
-Run the scripts in this order. Each sets its working directory on its first lines, to a path on the author's computer: change that line to the folder holding the data.
+Run the scripts in this order, from the project root. The scripts find the project through the `.project-root` marker: the R scripts source `code/paths.R`, the do-files run `code/config.do`, and the Python scripts derive the root from their own location. Intermediate files go to `data/derived/`, tables and figures to `output/`.
 
 | Script | Language | Reads | Writes |
 |---|---|---|---|
@@ -58,12 +59,12 @@ Supplementary scripts:
 | `ax6_map_projects.py` | Python | map of geolocated projects |
 | `code/maps/` | Python | maps by sector and by continent, project summary statistics |
 
-Three links in this chain are to be verified: `05_impute_missing_data.Rmd` writes `imputed_data_base2bis.dta` while `06_growth_regressions.do` reads `imputed_data_base2.dta`; no script writes `imputed_data_base4.dta`, read by `07_investment_channel.do`; no script writes `IGRAPHDATA2.xlsx`, read by `ax4_network_graph.py`.
+Three links in this chain are to be verified: `05_impute_missing_data.Rmd` writes `imputed_data_base2bis.dta` while `06_growth_regressions.do` reads `imputed_data_base2.dta`; `imputed_data_base4.dta`, read by `07_investment_channel.do`, and `IGRAPHDATA2.xlsx`, read by `ax4_network_graph.py`, are in `data/derived/` but no script writes them. `code/maps/projects_by_continent.py` maps ACLED conflict events in West Africa and reads `data/raw/acled/`, which is not part of this project's data.
 
 ## Software
 
 - R: `tidyverse`, `haven`, `readxl`, `mice`, `VIM`, `ggplot2`, `sf`, `leaflet`, `labelled`, `writexl`, `openxlsx`, `FactoMineR`, `factoextra`.
 - Stata: `xtivreg2` (with `ivreg2` and `ranktest`) and `estout` from SSC.
-- Python: `pandas`, `geopandas`, `matplotlib`, `seaborn`, `networkx`, `folium`, `scipy`, `scikit-learn`.
+- Python: `pandas`, `geopandas` below 1.0 (`ax5_map_by_country.py` and `ax6_map_projects.py` call `geopandas.datasets`, removed in 1.0), `matplotlib`, `seaborn`, `networkx`, `folium`, `scipy`, `scikit-learn`.
 
 Package versions are not recorded.

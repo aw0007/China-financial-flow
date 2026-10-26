@@ -1,10 +1,14 @@
 import pandas as pd
 import networkx as nx
 import matplotlib.pyplot as plt
+from pathlib import Path
 
 
 # Load the Excel file
-file_path = "C:/Users/massa/Desktop/Repli/data/IGRAPHDATA2.xlsx"
+ROOT = Path(__file__).resolve().parents[1]
+OUT = ROOT / "output"
+
+file_path = ROOT / "data" / "derived" / "IGRAPHDATA2.xlsx"
 data = pd.read_excel(file_path)
 
 # Calculer les poids des arêtes comme valeurs normalisées de 'stream'
@@ -35,7 +39,7 @@ nx.draw_networkx_edges(G, pos, edge_color='grey', width=[G[u][v]['weight']*5 for
 nx.draw_networkx_labels(G, pos, font_size=9, font_family='sans-serif')
 
 plt.axis('off')
-plt.savefig('C:/Users/massa/Desktop/Repli/resultats/network_graph.png')
+plt.savefig(OUT / 'network_graph.png')
 plt.show()
 
 
@@ -70,5 +74,5 @@ nx.draw_networkx_edges(G, pos, edge_color='grey', width=[G[u][v]['weight']*5 for
 nx.draw_networkx_labels(G, pos, font_size=10, font_family='sans-serif')
 
 plt.axis('off')
-plt.savefig('C:/Users/massa/Desktop/Repli/resultats/network_graph_adjusted.png')  # Enregistrer l'image
+plt.savefig(OUT / 'network_graph_adjusted.png')  # Enregistrer l'image
 plt.show()

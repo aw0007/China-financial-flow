@@ -2,11 +2,13 @@
 clear all
 
 // Définir le répertoire de travail
-cd "C:\Users\massa\Desktop\Repli\data\"
+if "$ROOT" == "" global ROOT "`c(pwd)'"
+do "$ROOT/code/config.do"
+cd "$DERIVED"
 
 // Créer un dossier pour les résultats
 
-local resultpath "C:\Users\massa\Desktop\Repli\resultats\"
+local resultpath "$OUT/"
 
 // Charger la base de données BRI
 use imputed_data_base4.dta, clear

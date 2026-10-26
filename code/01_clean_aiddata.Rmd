@@ -37,7 +37,8 @@ library(leaflet)
 
 ```{r}
 
-setwd("C:/Users/massa/Desktop/Repli/data/AidDatas_Global_Chinese_Development_Finance_Dataset_Version_3_0/AidDatas_Global_Chinese_Development_Finance_Dataset_Version_3_0")
+source(if (file.exists("paths.R")) "paths.R" else "code/paths.R")
+setwd(AIDDATA)
 dta <- read_dta("AidDatasGlobalChineseDevelopmentFinance3GEO.dta")
 ```
 
@@ -63,7 +64,7 @@ summary(dta01$AmountNominalUSD)
 ```
 
 ```{r}
-setwd("C:/Users/massa/Desktop/Repli/data/AidDatas_Global_Chinese_Development_Finance_Dataset_Version_3_0/AidDatas_Global_Chinese_Development_Finance_Dataset_Version_3_0")
+setwd(AIDDATA)
 # Calcul du nombre de projets par année d'engagement
 dta01<- dta01 %>% 
   mutate(mmontant=AmountConstantUSD2021/1000000000)
@@ -97,9 +98,9 @@ dta_sum_by_dta_by_country_year_year3 <- dta02 %>%
   summarise(totalAmountyc = sum(AmountConstantUSD2021, na.rm = TRUE),)
 
 
-write_dta(dta_sum_by_dta_by_country_year_year2,"dta_sum_by_dta_by_country_year_year2.dta")
+write_dta(dta_sum_by_dta_by_country_year_year2, file.path(DERIVED, "dta_sum_by_dta_by_country_year_year2.dta"))
 
-write_dta(dta_sum_by_dta_by_country_year_year3,"dta_sum_by_dta_by_country_year_year3.dta")
+write_dta(dta_sum_by_dta_by_country_year_year3, file.path(DERIVED, "dta_sum_by_dta_by_country_year_year3.dta"))
 
 
 
@@ -108,7 +109,7 @@ write_dta(dta_sum_by_dta_by_country_year_year3,"dta_sum_by_dta_by_country_year_y
 #creation de la base par secteurs
 
 ```{r}
-setwd("C:/Users/massa/Desktop/Repli/data/AidDatas_Global_Chinese_Development_Finance_Dataset_Version_3_0/AidDatas_Global_Chinese_Development_Finance_Dataset_Version_3_0")
+setwd(AIDDATA)
 # Calcul du nombre de projets par année d'engagement
 dta01<- dta01 %>% 
   mutate(mmontant=AmountConstantUSD2021/1000000000)
@@ -138,7 +139,7 @@ dta_aggregated_country_year_sector_wide <- dta_aggregated_country_year_sector_wi
 names(dta_aggregated_country_year_sector_wide)
 
 # Enregistrement du fichier nettoyé
-write_dta(dta_aggregated_country_year_sector_wide, "dta_aggregated_country_year_sector_wide.dta")
+write_dta(dta_aggregated_country_year_sector_wide, file.path(DERIVED, "dta_aggregated_country_year_sector_wide.dta"))
 
 
 ```
@@ -147,7 +148,7 @@ write_dta(dta_aggregated_country_year_sector_wide, "dta_aggregated_country_year_
 ```{r}
 
 # Définir le chemin de base pour les graphiques
-chemin_base <- "C:/Users/massa/Desktop/Repli/resultats/"
+chemin_base <- paste0(OUT, "/")
 
 # Fonction pour enregistrer un graphique avec le titre comme nom de fichier
 enregistrer_graphique <- function(ggplot_object) {
@@ -255,7 +256,7 @@ f<-ggplot(data = dta_sum_by_year, aes(x = CommitmentYear, y = TotalAmount)) +
   )
 enregistrer_graphique(f)
 
-write_dta(dta_sum_by_year,"dta_sum_by_year.dta")
+write_dta(dta_sum_by_year, file.path(DERIVED, "dta_sum_by_year.dta"))
 
 
 ```

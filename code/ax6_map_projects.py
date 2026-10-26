@@ -10,13 +10,17 @@ from pathlib import Path
 
 
 # Chemin du fichier de données
-file_path = "C:/Users/massa/Desktop/Repli/data/AidDatas_Global_Chinese_Development_Finance_Dataset_Version_3_0/AidDatas_Global_Chinese_Development_Finance_Dataset_Version_3_0/AidDatasGlobalChineseDevelopmentFinance3GEO.dta"
+ROOT = Path(__file__).resolve().parents[1]
+AIDDATA = ROOT / "data" / "raw" / "AidDatas_Global_Chinese_Development_Finance_Dataset_Version_3_0" / "AidDatas_Global_Chinese_Development_Finance_Dataset_Version_3_0"
+OUT = ROOT / "output"
+
+file_path = AIDDATA / "AidDatasGlobalChineseDevelopmentFinance3GEO.dta"
 
 # Chargement des données
 data = pd.read_stata(file_path)
 
 # Répertoire pour enregistrer les figures
-figures_dir = "C:/Users/massa/Desktop/Memoire MAG3/data/AidDatas_Global_Chinese_Development_Finance_Dataset_Version_3_0/AidDatas_Global_Chinese_Development_Finance_Dataset_Version_3_0/Carthographie/"
+figures_dir = f"{OUT}/cartographie/"
 Path(figures_dir).mkdir(exist_ok=True)
 
 # Affichage des informations de base et des premières lignes du jeu de données

@@ -1,6 +1,7 @@
 library(readxl)
 library(tidyverse)
-setwd("C:/Users/massa/Desktop/Repli/data/AidDatas_Global_Chinese_Development_Finance_Dataset_Version_3_0/AidDatas_Global_Chinese_Development_Finance_Dataset_Version_3_0/")
+source(if (file.exists("paths.R")) "paths.R" else "code/paths.R")
+setwd(AIDDATA)
 # Charger le fichier Excel pour en examiner la structure
 file_path <- "AidDatasGlobalChineseDevelopmentFinanceDataset_v3.0 - Copy.xlsx"
 data <- read_excel(file_path)
@@ -155,7 +156,7 @@ graph <- ggplot(sum_by_sector, aes(x = reorder(`Sector Name`, -Total_Amount_Mill
 print(graph)
 
 # Sauvegarder le graphique dans un fichier
-ggsave("sector_funding_distribution_with_labels.png", plot = graph, width = 5, height = 5, dpi = 300)
+ggsave(file.path(OUT, "sector_funding_distribution_with_labels.png"), plot = graph, width = 5, height = 5, dpi = 300)
 
 
 # Calculer la somme des montants par région
@@ -180,6 +181,6 @@ p<- ggplot(sum_by_year, aes(x = `Commitment Year`, y = Total_Amount_Millions)) +
 
 print(p)
 # Sauvegarder le graphique dans un fichier
-ggsave("evolutionanuelffc.png", plot = p, width = 5, height = 5, dpi = 300)
+ggsave(file.path(OUT, "evolutionanuelffc.png"), plot = p, width = 5, height = 5, dpi = 300)
 
 

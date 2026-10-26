@@ -21,7 +21,9 @@ clear all
 set more off, permanently
 
 // Set the working directory to the specified path
-cd "C:\Users\massa\Desktop\Repli\data\"
+if "$ROOT" == "" global ROOT "`c(pwd)'"
+do "$ROOT/code/config.do"
+cd "$DERIVED"
 
 
 use BASE2.dta , clear // Load the BRI dataset

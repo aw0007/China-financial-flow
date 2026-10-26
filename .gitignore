@@ -1,4 +1,6 @@
 data/raw/
+data/derived/*
+!data/derived/dta_sum_by_year.dta
 *.aux
 *.log
 *.out

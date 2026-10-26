@@ -22,7 +22,9 @@ clear all
 set more off, permanently
 
 // Set the working directory to the specified path
-cd "C:\Users\massa\Desktop\Memoire MAG3\data\"
+if "$ROOT" == "" global ROOT "`c(pwd)'"
+do "$ROOT/code/config.do"
+cd "$DERIVED"
 
 use dta_sum_by_year.dta , clear // Load the BRI dataset
 

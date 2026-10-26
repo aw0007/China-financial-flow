@@ -25,7 +25,8 @@ library(writexl)
 ```
 
 ```{r}
-setwd("C:/Users/massa/Desktop/Repli/data/")
+source(if (file.exists("paths.R")) "paths.R" else "code/paths.R")
+setwd(RAW)
 
 filpath1<-("World developement indicator WB/Trade/API_NE.TRD.GNFS.ZS_DS2_en_excel_v2_6299056 - Copy.xls")
 trade <- read_excel(filpath1)
@@ -43,7 +44,7 @@ filpath5<-("World developement indicator WB/gdp per cap current/API_NY.GDP.PCAP.
 gdp_per_cap<-read_excel(filpath5)
 
 
-filpath6<-("C:/Users/massa/Desktop/Repli/data//World developement indicator WB/Gross domestic savings (% of GDP)/API_NY.GDS.TOTL.ZS_DS2_en_excel_v2_5997014 copy.xls")
+filpath6<-("World developement indicator WB/Gross domestic savings (% of GDP)/API_NY.GDS.TOTL.ZS_DS2_en_excel_v2_5997014 copy.xls")
 savings<- read_excel(filpath6)
 
 
@@ -94,10 +95,10 @@ finance<-read_excel(filpath18)
 filpath19 <-("World developement indicator WB/Labor force/API_SL.TLF.TOTL.IN_DS2_en_excel_v2_6508341 - Copy.xls")
 Labor<-read_excel(filpath19)
 
-filpath20 <-("C:/Users/massa/Desktop/Repli/data//steel production/steel.xlsx")
+filpath20 <-("steel production/steel.xlsx")
 steel<-read_excel(filpath20)
 
-filpath21 <-("C:/Users/massa/Desktop/Repli/data/Economic Transformation Database/ETD_230918.dta")
+filpath21 <-("Economic Transformation Database/ETD_230918.dta")
 ETD<-read_dta(filpath21)
 
 
@@ -370,7 +371,7 @@ GFCF_all <- GFCF_all %>%
 ## Savings our datasets
 
 ```{r}
-setwd("C:/Users/massa/Desktop/Memoire MAG3/data/")
+setwd(DERIVED)
 
 write_dta(savings1, "savings1.dta")
 

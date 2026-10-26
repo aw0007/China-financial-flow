@@ -9,7 +9,9 @@ clear all
 set more off, permanently
 
 // Set the working directory to the specified path
-cd "C:\Users\massa\Desktop\MAG 3\MEmoire\Data\AidDatas_Global_Chinese_Development_Finance_Dataset_Version_3_0\AidDatas_Global_Chinese_Development_Finance_Dataset_Version_3_0"
+if "$ROOT" == "" global ROOT "`c(pwd)'"
+do "$ROOT/code/config.do"
+cd "$RAW/AidDatas_Global_Chinese_Development_Finance_Dataset_Version_3_0/AidDatas_Global_Chinese_Development_Finance_Dataset_Version_3_0"
 
 
 // Close the log file if it's open and continue logging

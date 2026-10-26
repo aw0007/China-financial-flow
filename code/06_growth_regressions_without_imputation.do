@@ -19,10 +19,12 @@ clear all
 set more off, permanently
 
 // Définir le répertoire de travail
-cd "C:\Users\massa\Desktop\Repli\data\"
+if "$ROOT" == "" global ROOT "`c(pwd)'"
+do "$ROOT/code/config.do"
+cd "$DERIVED"
 
 
-local resultpath "C:\Users\massa\Desktop\Repli\resultats\"
+local resultpath "$OUT/"
 
 // Charger la base de données BRI
 use BASE2.dta, clear

@@ -20,11 +20,13 @@ clear all
 set more off, permanently
 
 // Set the working directory to the specified path
-cd "C:\Users\massa\Desktop\Repli\data\"
+if "$ROOT" == "" global ROOT "`c(pwd)'"
+do "$ROOT/code/config.do"
+cd "$DERIVED"
 
 // Créer un dossier pour les résultats
 
-local resultpath "C:\Users\massa\Desktop\Repli\resultats\"
+local resultpath "$OUT/"
 
 
 // Close the log file if it's open and continue logging

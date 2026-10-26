@@ -48,7 +48,8 @@ library(knitr)
 # https://cran.r-project.org/web/packages/mice/mice.pdf
 
 
-setwd("C:/Users/massa/Desktop/Repli/data")
+source(if (file.exists("paths.R")) "paths.R" else "code/paths.R")
+setwd(DERIVED)
 
 data <- read_dta('BASE2.dta')
 
@@ -84,7 +85,7 @@ missing_ratesdf<-data_frame(missing_rates)
 missing_rates_tex <- kable(missing_ratesdf, format = "latex", booktabs = TRUE)
 
 # Enregistrer le résultat au format .tex
-writeLines(missing_rates_tex, "C:/Users/massa/Desktop/Repli/resultats/missing_rates1.tex")
+writeLines(missing_rates_tex, file.path(OUT, "missing_rates1.tex"))
 
 
 ```
@@ -124,7 +125,7 @@ p <- ggplot(data_missing, aes(x = Row, y = Variable, fill = Missing)) +
 # Afficher le graphe
 print(p)
 
-ggsave("C:/Users/massa/Desktop/Repli/resultats/missing_data_heatmap1.png", plot = p, width = 10, height = 8)
+ggsave(file.path(OUT, "missing_data_heatmap1.png"), plot = p, width = 10, height = 8)
 
 
 
@@ -170,7 +171,7 @@ summary(imputed_data)
 complete_data <- complete(imputed_data, 1)
 
 # Enregistrer cette imputation complète en format .dta
-write_dta(complete_data, "C:/Users/massa/Desktop/Repli/data/imputed_data_base2bis.dta")
+write_dta(complete_data, file.path(DERIVED, "imputed_data_base2bis.dta"))
 
 ```
 

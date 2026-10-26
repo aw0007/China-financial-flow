@@ -4,7 +4,11 @@ from pathlib import Path
 import matplotlib.pyplot as plt
 
 # Load the dataset
-file_path = "C:/Users/massa/Desktop/Repli/data/AidDatas_Global_Chinese_Development_Finance_Dataset_Version_3_0/AidDatas_Global_Chinese_Development_Finance_Dataset_Version_3_0/AidDatasGlobalChineseDevelopmentFinance3GEO.dta"
+ROOT = Path(__file__).resolve().parents[1]
+AIDDATA = ROOT / "data" / "raw" / "AidDatas_Global_Chinese_Development_Finance_Dataset_Version_3_0" / "AidDatas_Global_Chinese_Development_Finance_Dataset_Version_3_0"
+OUT = ROOT / "output"
+
+file_path = AIDDATA / "AidDatasGlobalChineseDevelopmentFinance3GEO.dta"
 data = pd.read_stata(file_path)
 
 # Step 1: Filter out rows with missing values
@@ -52,6 +56,6 @@ plt.ylabel('Latitude')
 ax.axis('off')
 
 # Save the figure if needed
-plt.savefig('C:/Users/massa/Desktop/Repli/resultats/Total des investissements par pays en milliards de dollars américains (2000-2014).png', bbox_inches='tight')
+plt.savefig(OUT / 'Total des investissements par pays en milliards de dollars américains (2000-2014).png', bbox_inches='tight')
 
 plt.show()

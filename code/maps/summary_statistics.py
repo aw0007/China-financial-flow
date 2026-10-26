@@ -8,8 +8,12 @@ from sklearn.cluster import KMeans
 import folium
 
 # File paths
-file_path = "C:/Users/massa/Desktop/MiniProjet/Carto aid data/AidDatas_Global_Chinese_Development_Finance.xlsx"
-figures_dir = "C:/Users/massa/Desktop/MiniProjet/Carto aid data/Figures/"
+ROOT = Path(__file__).resolve().parents[2]
+RAW = ROOT / "data" / "raw"
+OUT = ROOT / "output"
+
+file_path = RAW / "AidDatas_Global_Chinese_Development_Finance.xlsx"
+figures_dir = f"{OUT}/maps/"
 Path(figures_dir).mkdir(parents=True, exist_ok=True)  # Create the output directory if it doesn't exist
 
 # Load dataset with only relevant columns
@@ -46,7 +50,7 @@ gdf = gpd.GeoDataFrame(
 
 # Load the world shapefile for map visualization
 try:
-    world = gpd.read_file('C:/Users/massa/Desktop/MiniProjet/Carto aid data/NaturalEarth/ne_110m_admin_0_countries.shp')
+    world = gpd.read_file(RAW / 'NaturalEarth' / 'ne_110m_admin_0_countries.shp')
 except FileNotFoundError:
     print("Error: World shapefile not found. Please download it from Natural Earth Data.")
     exit(1)
